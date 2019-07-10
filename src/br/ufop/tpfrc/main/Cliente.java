@@ -26,25 +26,27 @@ import javax.swing.text.DefaultCaret;
  *
  * @author Mateus
  */
+//cliente herda da classe JFrame para criação da interface gráfica
 public class Cliente extends javax.swing.JFrame{
 
     private Socket socket;
     private OutputStream outputStream;
     private Writer outputStreamWriter; 
     private BufferedWriter bufferedWriter;
-    private final JTextField txtNome;
-    private final JTextField txtIP;
+    //os dois atributos abaixo não podem ser alterados pois são constantes
+    private final JTextField txtNome; //separa a caixa de texto para o nome
+    private final JTextField txtIP; //separa a caixa de texto para o IP
     /**
      * Creates new form Cliente
      */
     public Cliente() {
-        initComponents();
+        initComponents(); //método chamado pelo próprio netBeans para criar a interface gráfica
         
-        JLabel lblMensagem = new JLabel("Informe o seu nome e o IP destino:");
+        JLabel lblMensagem = new JLabel("Informe o seu nome e o IP destino:"); //espaço reservado para o texto
         txtNome = new JTextField("Nome");
-        txtIP = new JTextField("127.0.0.1");
-        Object[] texts = {lblMensagem, txtNome, txtIP};  
-        JOptionPane.showMessageDialog(null, texts);
+        txtIP = new JTextField("127.0.0.1"); //endereço de IP de loopback (endereço que não está associado a nenhuma rede)
+        Object[] texts = {lblMensagem, txtNome, txtIP}; //vetor que permite diferentes tipos de variáveis
+        JOptionPane.showMessageDialog(null, texts); //mostra na tela a janela inicial
         
         //Faz scrolling automaticamente quando novas mensagens são enviadas
         DefaultCaret caret = (DefaultCaret)txtaChat.getCaret();
@@ -53,11 +55,11 @@ public class Cliente extends javax.swing.JFrame{
     
     public void conectar(){
         try {
-            socket = new Socket(txtIP.getText(),1999);
-            outputStream = socket.getOutputStream();
+            socket = new Socket(txtIP.getText(),1999); //instancia um socket passando o IP informado (servidor) e a porta padrão
+            outputStream = socket.getOutputStream(); 
             outputStreamWriter = new OutputStreamWriter(outputStream);
             bufferedWriter = new BufferedWriter(outputStreamWriter);
-            bufferedWriter.write(txtNome.getText() + "\r\n");
+            bufferedWriter.write(txtNome.getText() + "\r\n"); //passa o campo txtNome para string utilizando o getText()
             bufferedWriter.flush();
         } catch (IOException ex) {
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
@@ -66,27 +68,27 @@ public class Cliente extends javax.swing.JFrame{
     
     public void enviarMensagem(String mensagem){  
         try {
-            bufferedWriter.write(mensagem + "\r\n");
-            txtaChat.append(txtNome.getText() + "(eu) : " + txtMsg.getText() + "\r\n");
+            bufferedWriter.write(mensagem + "\r\n"); //escreve a mensagem
+            txtaChat.append(txtNome.getText() + "(eu) : " + txtMsg.getText() + "\r\n"); //adiciona abaixo da ultima mensagem a nova mensagem que foi enviada
             bufferedWriter.flush();        
-            txtMsg.setText("");
+            txtMsg.setText(""); //deixa o campo de mensagem vazio para nova escrita
         } catch (IOException ex) {
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     public void escutarEntrada(){                  
-        InputStream inputStream = null;
+        InputStream inputStream;
         try {
-            inputStream = socket.getInputStream();
+            inputStream = socket.getInputStream(); //verifica o que o cliente atual está recebendo como entrada
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             String mensagem = "";
             
             while(mensagem != null){
-                if(bufferedReader.ready()){
-                    mensagem = bufferedReader.readLine();         
-                    txtaChat.append(mensagem + "\r\n");
+                if(bufferedReader.ready()){ //se for legível
+                    mensagem = bufferedReader.readLine(); //recebe e le a mensagem que foi enviada por qualquer cliente      
+                    txtaChat.append(mensagem + "\r\n"); //coloca abaixo da ultima mensagem que foi enviada
                 } 
             }               
         } catch (IOException ex) {
@@ -166,7 +168,7 @@ public class Cliente extends javax.swing.JFrame{
 
     private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
         // TODO add your handling code here:
-        enviarMensagem(txtMsg.getText());
+        enviarMensagem(txtMsg.getText()); //o método é invocado quando é pressionado o botão de enviar
     }//GEN-LAST:event_btnEnviarActionPerformed
 
     private void txtMsgKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtMsgKeyTyped
@@ -177,7 +179,7 @@ public class Cliente extends javax.swing.JFrame{
         // TODO add your handling code here:
         if(evt.getKeyCode() == KeyEvent.VK_ENTER){
             enviarMensagem(txtMsg.getText());                                                          
-        } 
+        } //o método é invocado quando a tecla enter é pressionada
     }//GEN-LAST:event_txtMsgKeyPressed
 
     /**
@@ -216,7 +218,7 @@ public class Cliente extends javax.swing.JFrame{
         });
         
         Cliente cliente = new Cliente();
-        cliente.setVisible(true);
+        cliente.setVisible(true); //faz com que a interface esteja visivel para o usuario
         cliente.conectar();
         cliente.escutarEntrada();
     }

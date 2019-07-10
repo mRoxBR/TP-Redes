@@ -23,26 +23,28 @@ import java.util.logging.Logger;
  *
  * @author Mateus
  */
-public class Servidor implements Runnable {
-
-private static ArrayList<BufferedWriter> clientes;           
-private static ServerSocket servidor; 
+//classe servidor implementa a interface Runnable, para utilizar threads
+public class Servidor implements Runnable { 
+private static ArrayList<BufferedWriter> clientes; //serve para armazenar dados de escrita do cliente     
+private static ServerSocket servidor;  //reserva socket pro servidor
 private String nomeCliente;
-private Socket socketCliente;
-private InputStream inputStream;
-private InputStreamReader inputStreamReader;  
-private BufferedReader bufferedReader;
+private Socket socketCliente; //reserva socket para o cliente
+private InputStream inputStream; //permite fluxos de entrada
+private InputStreamReader inputStreamReader;  //realiza a leitura do fluxo de dados 
+private BufferedReader bufferedReader; //reserva uma região de memória para o que foi lido no fluxo de entrada
 
+//construtor da classe Servidor recebe como parâmetro socket do cliente
     public Servidor(Socket socketCliente){
-        this.socketCliente = socketCliente;
+        this.socketCliente = socketCliente; //inicializa o atributo socketCliente com o socket passado por parâmetro
         try {
-            inputStream  = socketCliente.getInputStream();
-            inputStreamReader = new InputStreamReader(inputStream);
-            bufferedReader = new BufferedReader(inputStreamReader);
+            inputStream  = socketCliente.getInputStream(); //permite o fluxo de entrada de dados
+            inputStreamReader = new InputStreamReader(inputStream); //instancia um leitor de fluxo de dados
+            bufferedReader = new BufferedReader(inputStreamReader); //instancia uma região de memória pra armazenar os dados
         } catch (IOException e) {
             e.printStackTrace();
         }                          
     }
+    
     
     @Override
     public void run() {
@@ -51,8 +53,8 @@ private BufferedReader bufferedReader;
             OutputStream outputStream =  this.socketCliente.getOutputStream();
             Writer outputStreamWriter = new OutputStreamWriter(outputStream);
             BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter); 
-            clientes.add(bufferedWriter);
-            nomeCliente = mensagem = bufferedReader.readLine();
+            clientes.add(bufferedWriter); //região de memória que armazena a saida de dados de um cliente
+            nomeCliente = mensagem = bufferedReader.readLine(); //leitura da saida de dados do cliente
 
             while(mensagem != null){           
                 mensagem = bufferedReader.readLine();
@@ -65,11 +67,11 @@ private BufferedReader bufferedReader;
     }
     
     public void enviaParaTodos(BufferedWriter bufferedWriterEnviado, String mensagem){
-        for(BufferedWriter bufferedWriter : clientes){
-            if(bufferedWriterEnviado != bufferedWriter){
+        for(BufferedWriter bufferedWriter : clientes){ //percorre a lista de clientes, sendo o bufferedWriter o elementro em questão
+            if(bufferedWriterEnviado!= bufferedWriter){ //verifica se o bufferedWriter em questão é do cliente que estã enviando a mensagem
                 try {
                     bufferedWriter.write(nomeCliente + " : " + mensagem + "\r\n"); 
-                    bufferedWriter.flush();
+                    bufferedWriter.flush(); //limpa a região de memória do bufferedWriter
                 } catch (IOException ex) {
                     Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -84,11 +86,12 @@ private BufferedReader bufferedReader;
             clientes = new ArrayList<BufferedWriter>();
             while(true){
                 System.out.println("Esperando alguém se conectar...");
-                Socket socketCliente = servidor.accept();
+                Socket socketCliente = servidor.accept(); //servidor aceita qualquer conexão solicitada 
                 System.out.println("Cliente conectado - IP do cliente: " +
-                        socketCliente.getInetAddress().getHostAddress());
-                Thread t = new Thread(new Servidor(socketCliente));
-                t.start();   
+                        socketCliente.getInetAddress().getHostAddress()); //recupera o IP do cliente
+                Servidor s = new Servidor(socketCliente); 
+                Thread t = new Thread(s); //representa um servidor que está associado a um socket de um cliente especifico
+                t.start();  //invoca o método run da classe referente ao objeto que foi instanciado
             }
         } catch (IOException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
